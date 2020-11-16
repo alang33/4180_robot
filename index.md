@@ -1,8 +1,25 @@
-## Welcome to GitHub Pages
+## AlarmBot - ECE 4180
 
-You can use the [editor on GitHub](https://github.com/alang33/4180_robot/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+Andrew Lang, Chase Hall, Kyeomeun Jang, William Hamil
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+### Parts List
+- ARM mbed
+- Raspberry Pi Zero W
+- Sonar / whisker switches
+- Sparkfun Dual H-Bridge Motor Driver
+- Sparkfun Shadow Chassis
+- (2x) Sparkfun Hobby Gearmotor - 140 RPM
+- (2x) Sparkfun Wheel - 65mm
+- Adafruit Bluefruit LE UART Friend Bluetooth Module
+- Adafruit Stereo Bonnet Pack for Raspberry Pi Zero W
+
+
+
+
+
+[editor on GitHub](https://github.com/alang33/4180_robot/edit/gh-pages/index.md)
+
+
 
 ### Markdown
 
