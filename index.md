@@ -5,11 +5,19 @@ Andrew Lang, Chase Hall, Kyeomeun Jang, William Hamil
 ### Parts List
 - ARM mbed
 - Raspberry Pi Zero W
-- Sonar / whisker switches
+- (2x) Sonar (HC-SR04)
+- Whisker switches
 - Sparkfun Dual H-Bridge Motor Driver
-- Sparkfun Shadow Chassis
+- (2x) Sparkfun Shadow Chassis
 - (2x) Sparkfun Hobby Gearmotor - 140 RPM
 - (2x) Sparkfun Wheel - 65mm
+- (2x) DC Battery Pack
+- (8x) AA Batteries
+- Sparkfun MiniUSB Breakout Board
+- uLCD Screen
+- USB A to MiniUSB Cable
+- MicroUSB to USB A Adapter
+- MicroUSB to DC Barrel Jack
 - Adafruit Bluefruit LE UART Friend Bluetooth Module
 - Adafruit Stereo Bonnet Pack for Raspberry Pi Zero W
 
