@@ -21,6 +21,10 @@ Andrew Lang, Chase Hall, Kyeomeun Jang, William Hamil
 - Adafruit Bluefruit LE UART Friend Bluetooth Module
 - Adafruit Stereo Bonnet Pack for Raspberry Pi Zero W
 
+###Background
+For our project, we will be creating an RC robot alarm clock. The idea is that you can set an alarm clock using a web interface hosted on a Raspberry Pi. Once the alarm goes off, the robot will drive away and force you out of bed to turn off the alarm. The movement will be mostly random for the robot, but we will implement collision detection using a sonar module to prevent the robot form getting stuck. The alarm can be turned off using the up and down arrows on the Adafruit Bluetooth app. Once the alarm is activated, you can press 1,2,3 or 4 on the app to snooze for that amount of time in minutes. However, the alarm can only be permanently stopped by resetting the mbed. The alarm tone will be played using a Pi interfacing with Spotify. This will allow you to set the soundtrack for your alarm. We will use an LCD to display the time to help set the alarm. If the alarm is activated, the LCD will flash black and white telling you to wake up. 
+
+
 
 
 
