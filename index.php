@@ -57,7 +57,7 @@
     body { 
   	margin: 0;
       color:#f0f0f0;
-      font-family: 'Strait';font-size: 22px;
+      font-family: 'Strait';font-size: 2rem;
       background-color:#191919;
     }
     a  { color:#0000FF; }
@@ -71,10 +71,8 @@
     background-color: #4CAF50;
     color: white;
     padding: 14px 20px;
-    margin: 8px 0;
     border: none;
     cursor: pointer;
-    width: 100%;
   }
         
   .button1{
@@ -100,13 +98,13 @@
   
   .left {
     padding: 16px;
-	float:left;
-	width:50%;
-  }
+    float:left;
+    width:50%;
+    }
   
   .right {
     padding: 16px;
-  }
+    }
   
   .err {
     color:red;
@@ -127,12 +125,13 @@
     color: white;
     padding: 25px ;
     display: flex;
+    flex-direction: column;
     justify-content: center; 
     align-items: center;
     border: 2px solid black;
     cursor: pointer;
-    height: 100px;
-    width: 35%;
+    height: 12rem;
+    width: 30rem;
 }    
 
 .rect_1 {
@@ -144,8 +143,8 @@
     align-items: center;
     border: 2px solid black;
     cursor: pointer;
-    height: 25px;
-    width: 35%;
+    height: 3rem;
+    width: 30rem;
 } 
 optgroup{font-size:20px;}
  /* Change styles for span and cancel button on extra small screens */
@@ -238,10 +237,10 @@ function updateClock ( )
     </optgroup>
     </select>
     <label style = "font-size: 1.5rem;">:</label>
-    <select name="minutes" style = "width: 4rem; font-size: 1.3rem;">
+    <select name="minutes" style = "width: 5.2postrem; font-size: 1.3rem;">
     <optgroup>
-      <option value="00">0</option>
-      <option value="05">5</option>
+      <option value="00">00</option>
+      <option value="05">05</option>
       <option value="10">10</option>
       <option value="15">15</option>
       <option value="20">20</option>
@@ -261,13 +260,14 @@ function updateClock ( )
       <div class = "rect" style = "margin-top: 1%;margin-bottom: 1%;">
           <div>
               <label style = "width:45%">Song</label>
-		<p style = "font-size: 2px;"></p>
-              <input style = "width: 12rem; height: 1.6rem;" name="song" required >
+		<p style = "font-size: 0.5rem;"></p>
+              <input style = "width: 12rem; height: 2rem;" name="song" required >
+              <p sytle = "font-size: 0.5rem;"></p>
           </div>
           <div>
               <label>Artist</label> 
-		<p style = "font-size: 2px;"></p>
-              <input style = "width: 12rem; height: 1.6rem;" type="text" name="artist">
+		<p style = "font-size: 0.5rem;"></p>
+              <input style = "width: 12rem; height: 2rem;" type="text" name="artist">
           </div>
     </div>
 </div>
