@@ -34,7 +34,7 @@ For our project, we will be creating an RC robot alarm clock. The idea is that y
 | H-bridge BI1   | p24      |
 | H-bridge BI2   | p25      |
 | H-bridge PWMB  | p26      |
-| H-bridge STBY  | Ground   |
+| H-bridge STBY  | Vcc      |
 | miniUSB D+     | D+       |
 | miniUSB D-     | D-       |
 | uLCD RX        | p27      |
