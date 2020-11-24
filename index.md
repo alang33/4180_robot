@@ -5,18 +5,17 @@ Andrew Lang, Chase Hall, Kyeomeun Jang, William Hamil
 ### Parts List
 - ARM mbed
 - Raspberry Pi Zero W
-- (2x) Sonar (HC-SR04)
-- Whisker switches
+- Sonar (HC-SR04)
 - Sparkfun Dual H-Bridge Motor Driver
 - (2x) Sparkfun Shadow Chassis
 - (2x) Sparkfun Hobby Gearmotor - 140 RPM
 - (2x) Sparkfun Wheel - 65mm
-- (2x) DC Battery Pack
-- (8x) AA Batteries
+- (3x) DC Battery Pack
+- (12x) AA Batteries
 - Sparkfun MiniUSB Breakout Board
-- uLCD Screen
+- uLCD-144-G2 LCD Screen
 - USB A to MiniUSB Cable
-- MicroUSB to USB A Adapter
+- MiniUSB to USB A Adapter
 - MicroUSB to DC Barrel Jack
 - Adafruit Bluefruit LE UART Friend Bluetooth Module
 - Adafruit Stereo Bonnet Pack for Raspberry Pi Zero W
@@ -24,8 +23,25 @@ Andrew Lang, Chase Hall, Kyeomeun Jang, William Hamil
 ### Background
 For our project, we will be creating an RC robot alarm clock. The idea is that you can set an alarm clock using a web interface hosted on a Raspberry Pi. Once the alarm goes off, the robot will drive away and force you out of bed to turn off the alarm. The movement will be mostly random for the robot, but we will implement collision detection using a sonar module to prevent the robot form getting stuck. The alarm can be turned off using the up and down arrows on the Adafruit Bluetooth app. Once the alarm is activated, you can press 1,2,3 or 4 on the app to snooze for that amount of time in minutes. However, the alarm can only be permanently stopped by resetting the mbed. The alarm tone will be played using a Pi interfacing with Spotify. This will allow you to set the soundtrack for your alarm. We will use an LCD to display the time to help set the alarm. If the alarm is activated, the LCD will flash black and white telling you to wake up. 
 
-
-
+### Connections
+| Hardware & Pin | mbed Pin |
+| -------------- | -------- |
+| HC-SR04 trig   | p6       |
+| HC-SR04 echo   | p7       | 
+| H-bridge AI1   | p21      |
+| H-bridge AI2   | p22      |
+| H-bridge PWMA  | p23      |
+| H-bridge BI1   | p24      |
+| H-bridge BI2   | p25      |
+| H-bridge PWMB  | p26      |
+| H-bridge STBY  | Ground   |
+| miniUSB D+     | D+       |
+| miniUSB D-     | D-       |
+| uLCD RX        | p27      |
+| uLCD TX        | p28      |
+| uLCD res       | p30      |
+| Bluetooth TX   | p13      |
+| Bluetooth RX   | p14      |
 
 
 
