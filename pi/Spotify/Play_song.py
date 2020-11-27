@@ -3,11 +3,19 @@ import serial
 import os
 import requests
 import time
+import sys
 import threading
+from gpiozero import LED, Button
+from time import sleep
 from refresh import Refresh
 # from exceptions import ResponseException
 from secrets import spotify_token, spotify_user_id
 # , discover_weekly_id
+
+led = LED(17)
+button = Button(2)
+
+
 
 class PlaySong:
     def __init__(self):
@@ -102,7 +110,19 @@ class PlaySong:
                 "Authorization": "Bearer {}".format(self.spotify_token)
             }  
         )
+        print("Play the song")
         
+    def pause(self):
+        query = "https://api.spotify.com/v1/me/player/pause"
+        request_body = json.dumps({"context_uri": "{}".format(self.playlist_uri)})
+        response = requests.put(query, data=request_body,
+            headers={
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        print("pause")
+        #print("response from actions_song")
+        #print(response.json)   
         #response_json = response.json() 
         #print(response_json)
     def check_time(self):
@@ -114,7 +134,7 @@ class PlaySong:
         minutes = data[1]
         data_2 = minutes.split("\n")
         minutes = data_2[0]
-        date_time = '21.11.2020 ' + '9' + ':'+'24' +':00'
+        date_time = '26.11.2020 ' + hours + ':'+minutes +':00'
         #print(date_time)
         pattern = '%d.%m.%Y %H:%M:%S'
         epoch = int(time.mktime(time.strptime(date_time, pattern)))
@@ -133,12 +153,25 @@ if __name__ == '__main__':
     cp.call_refresh()
     tracks = cp.get_txt_songs()
     alarm_time = cp.check_time()
+    if(alarm_time < int(round(time.time()))):
+        sys.exit()
     while True:
-        if alarm_time == int(round(time.time())):
-            
+        if alarm_time == int(round(time.time())) and start ==0:
             cp.play(tracks)
             time.sleep(1)
-            break
-        if(alarm_time < int(round(time.time()))):
-            break
+            start =1
+            print("After sleep")
+        if button.is_pressed:
+            print("led is on")
+            led.on()
+            start = 2
+            cp.pause()
+            sleep(5)
+            #button.when_released = led.off
+        if start == 2:
+            print("is led on?")
+            start = 1
+            led.off()
+            cp.play(tracks)
+        
         time.sleep(1)
