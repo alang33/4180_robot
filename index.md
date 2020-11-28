@@ -2,6 +2,9 @@
 
 Andrew Lang, Chase Hall, Kyeomeun Jang, William Hamil
 
+### Background
+This project creates an RC robot alarm clock. The idea is that you can set an alarm clock using a web interface hosted on a Raspberry Pi.  The Pi then sends the current time and alarm time to the MBED. Once the alarm goes off, the robot will drive away and force you out of bed to turn off the alarm. The movement will be mostly random for the robot, but will include collision detection using a sonar module. The alarm can be turned off or snoozed using the Adafruit Bluetooth app. However, the alarm can only be permanently stopped by resetting the mbed. The alarm tone will be played using a Pi interfacing with Spotify. This will allow you to set the soundtrack for your alarm. An LCD will display the current time and alarm time while inactive. If the alarm is activated the LCD will flash telling you to wake up. 
+
 ### Parts List
 - ARM mbed
 - Raspberry Pi Zero W
@@ -19,29 +22,73 @@ Andrew Lang, Chase Hall, Kyeomeun Jang, William Hamil
 - MicroUSB to DC Barrel Jack
 - Adafruit Bluefruit LE UART Friend Bluetooth Module
 - Adafruit Stereo Bonnet Pack for Raspberry Pi Zero W
+- Raspberry Pi cobbler
 
-### Background
-For our project, we will be creating an RC robot alarm clock. The idea is that you can set an alarm clock using a web interface hosted on a Raspberry Pi. Once the alarm goes off, the robot will drive away and force you out of bed to turn off the alarm. The movement will be mostly random for the robot, but we will implement collision detection using a sonar module to prevent the robot form getting stuck. The alarm can be turned off using the up and down arrows on the Adafruit Bluetooth app. Once the alarm is activated, you can press 1,2,3 or 4 on the app to snooze for that amount of time in minutes. However, the alarm can only be permanently stopped by resetting the mbed. The alarm tone will be played using a Pi interfacing with Spotify. This will allow you to set the soundtrack for your alarm. We will use an LCD to display the time to help set the alarm. If the alarm is activated, the LCD will flash black and white telling you to wake up. 
+## Setup
+The following connections need to be made to the MBED for all of the components to work.  Note that while VU on the MBED does supply 5V, the Bluetooth module and motors draw more current than provided and need to be connected direclty to the battery packs.  The MBED can also be powered by connecitng the VU pin to a power rail from the battery pack.
+The Raspberry Pi can be powered using the DC to microUSB adapter with its own battery pack.  The Pi GPIO pins are connected to the audio bonnet and the bonnet pins can be connected to a Pi cobbler for a breadboard connection.
 
-### Connections
-| Hardware & Pin | mbed Pin |
-| -------------- | -------- |
-| HC-SR04 trig   | p6       |
-| HC-SR04 echo   | p7       | 
-| H-bridge AI1   | p21      |
-| H-bridge AI2   | p22      |
-| H-bridge PWMA  | p23      |
-| H-bridge BI1   | p24      |
-| H-bridge BI2   | p25      |
-| H-bridge PWMB  | p26      |
-| H-bridge STBY  | Vcc      |
-| miniUSB D+     | D+       |
-| miniUSB D-     | D-       |
-| uLCD RX        | p27      |
-| uLCD TX        | p28      |
-| uLCD res       | p30      |
-| Bluetooth TX   | p13      |
-| Bluetooth RX   | p14      |
+### Motor Connections
+| MBED | H-Bridge | L-Motor | R-Motor |
+| ---- | -------- | ------- | ------- |
+| 5V   | VM       |         |         |
+| VOUT | VCC      |         |         |
+| GND  | GND      |         |         |
+| p21  | AI1      |         |         |
+| p22  | AI2      |         |         |
+| p23  | PWMA     |         |         |
+| p24  | BI1      |         |         |
+| p25  | BI2      |         |         |
+| p26  | PWMB     |         |         |
+| VOUT | STBY     |         |         |
+|      | A01      | -       |         |
+|      | A02      | +       |         |
+|      | B01      |         | -       |
+|      | B02      |         | +       |
+
+### miniUSB Connections
+| MBED | miniUSB |
+| ---- | ------- |
+| VOUT | VCC     |
+| D-   | D-      |
+| D+   | D+      |
+|      | ID      |
+| GND  | GND     |
+
+### uLCD Connections
+| MBED | uLCD |
+| ---- | ---- |
+| 5V   | +5V  |
+| p27  | RX   |
+| p28  | TX   |
+| p30  | RES  |
+| GND  | GND  |
+
+### Bluetooth Connections
+| MBED | Bluetooth |
+| ---- | --------- |
+| GND  | GND       |
+| 5V   | Vin       |
+|      | RTS       |
+| GND  | CTS       |
+| p13  | TX        |
+| p14  | RX        |
+
+### Sonar Connections (HC-SR04)
+| MBED | Sonar |
+| ---- | ----- |
+| VOUT | VCC   |
+| p6   | Trig  |
+| p7   | Echo  |
+| GND  | GND   |
+
+### Raspberry Pi Connections
+| MBED | Pi |
+| ---- | -- |
+| p    |    |
+
+### Schematic
+![Robot Schematic](/Schematic.png)
 
 
 
