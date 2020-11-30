@@ -79,6 +79,7 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 | p14  | RX        |
 
 ### Sonar Connections (HC-SR04)
+
 | MBED | Sonar |
 | ---- | ----- |
 | VOUT | VCC   |
@@ -94,8 +95,6 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 
 ### Schematic
 ![Robot Schematic](/Schematic.png)
-
-
 
 ### Difficulties and Future Improvements
 
