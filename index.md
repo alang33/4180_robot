@@ -29,6 +29,7 @@ The following connections need to be made to the MBED for all of the components 
 The Raspberry Pi can be powered using the DC to microUSB adapter with its own battery pack.  The Pi GPIO pins are connected to the audio bonnet and the bonnet pins can be connected to a Pi cobbler for a breadboard connection.
 
 ### Motor Connections
+
 | MBED | H-Bridge | L-Motor | R-Motor |
 | ---- | -------- | ------- | ------- |
 | 5V   | VM       |         |         |
@@ -47,6 +48,7 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 |      | B02      |         | +       |
 
 ### miniUSB Connections
+
 | MBED | miniUSB |
 | ---- | ------- |
 | VOUT | VCC     |
@@ -56,6 +58,7 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 | GND  | GND     |
 
 ### uLCD Connections
+
 | MBED | uLCD |
 | ---- | ---- |
 | 5V   | +5V  |
@@ -65,6 +68,7 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 | GND  | GND  |
 
 ### Bluetooth Connections
+
 | MBED | Bluetooth |
 | ---- | --------- |
 | GND  | GND       |
@@ -83,6 +87,7 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 | GND  | GND   |
 
 ### Raspberry Pi Connections
+
 | MBED | Pi |
 | ---- | -- |
 | p    |    |
