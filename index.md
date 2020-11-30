@@ -97,9 +97,10 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 
 
 
+
+### Demonstration Video
+
 [editor on GitHub](https://github.com/alang33/4180_robot/edit/gh-pages/index.md)
-
-
 
 ### Markdown
 
