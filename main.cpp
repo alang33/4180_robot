@@ -1,7 +1,6 @@
 /*
 ECE 4180 Final Project
 Alarm Bot by Chase Hall, William Hamil, Kyeomeun Jang, and Andrew Lang
-
 This alarm clock is mounted on a robot, which drives away from you when the alarm sounds, making you get out of bed
 and turn it off. The alarm time can be set and snoozed from a Bluetooth app, but can only be turned via a button on the robot itself
 */
@@ -12,37 +11,42 @@ and turn it off. The alarm time can be set and snoozed from a Bluetooth app, but
 #include "Motor.h"
 #include "uLCD_4DGL.h"
 #include "ultrasonic.h"
+#include "USBSerial.h"
 #include <string>
 #define ALARM_OFF       0                                                       // names for the alarm status, power up in ALARM_OFF
 #define ALARM_ON        1                                                       // robot travels randomly in this state
 #define ALARM_SNOOZE    2                                                       // robot doesn't travel in this state, but there is a timer waiting to put it back in ALARM_ON
 #define ALARM_ON_HAZARD 3                                                       // if a hazard is present when the alarm is on, the movement is no longer random 
 #define ALARM_SHUTOFF   4                                                       // ALARM_OFF is idle state, this is the state for when the alarm is physically turned off
-
+#define NULL            0
+#define SNOOZE_TIME     1                                                       // minutes of snooze to do
 
 
 ///   Declaring all global variables, mutex's, and volatile globals
 Mutex uLCD_mutex;                                                               // LCD will be written by updating alarm time, updating current time, and when alarm goes off
 Mutex PC_mutex;                                                                 // The PC Serial port can be written by either Bluetooth or the Pi when debugging
 volatile unsigned int alarmState = ALARM_OFF;                                   // power up with alarm off
-struct tm current_time = {.tm_min=59, .tm_hour=23};                             // The current time, to be written by the Pi at the beginning of execution
-struct tm alarm_time = {.tm_min=1};                                             // The alarm time, to be written by the Pi at the beginning of execution
+volatile uint8_t buffy[128];
+//struct tm current_time = {.tm_min=59, .tm_hour=23};                           // The current time, to be written by the Pi at the beginning of execution
+struct tm alarm_time;                                                           // The alarm time, to be written by the Pi at the beginning of execution
                                                                                 // TODO: current_time and alarm_time are arbitrary and hard coded right now, set up method to set them
 unsigned int flashRed = 0xFF0000;                                               // the color to flash when the alarm is going off (RED)
 void dist (int distance);                                                       // declaring the interrupt routine for sonar
+void SnoozeOver();                                                              // The snooze Timeout's callback function
 Timeout Snooze;                                                                 // The timeout for 1-4 minutes when you snooze the alarm
 Timeout IncTime;                                                                // To minimize traffic between Pi and mbed, we will set up a real-time clock to increment current_time
 volatile unsigned int waitingMin = 0;                                           // This lets us know whether to attach something to IncTime timeout
 
 ///   Declaring all hardware object
 RawSerial Bluetooth(p13, p14);                                                  // Adafruit Bluetooth Module:   p13 - TX, p14 - RX
-RawSerial PC(USBTX, USBRX);                                                     // debug connection to the PC:  USBTX - TX, USBRX - RX 
-// USBSerial Pi;                                                                // Pi USB connection from breakout to D+, D-
+//RawSerial PC(USBTX, USBRX);                                                     // debug connection to the PC:  USBTX - TX, USBRX - RX 
+USBSerial Pi;                                                                   // Pi USB connection from breakout to D+, D-
 ultrasonic Sonar(p6, p7, .1, 1, &dist);                                         // the sonar sensor (1 of them);
 uLCD_4DGL uLCD(p28, p27, p30);                                                  // LCD screen for time, status: p28 - TX, p27 - RX, p30 - reset
 Motor leftWheel(p23, p21, p22);                                                 // H-bridge for left motor:     p23 - PWMA, p21 - fwd (AI1), p22 - rev (AI2)
 Motor rightWheel(p26, p24, p25);                                                // H-bridge for right motor:    p26 - PWMB, p24 - fwd (BI1), p25 - rev (BI2)
-DigitalIn AlarmOff(p20);                                                        // in case we want to use a push button instead of resetting mbed
+DigitalIn AlarmOff(p20, PullUp);                                                        // in case we want to use a push button instead of resetting mbed
+DigitalIn AlarmSnooze(p19, PullUp);
 DigitalOut led1(LED1);                                                          // LEDs on mbed for debugging
 DigitalOut led2(LED2);
 DigitalOut led3(LED3);
@@ -55,12 +59,18 @@ void checkAlarm()                                                               
 {
     char cTime[32];
     char aTime[32];
+    time_t seconds;
     while (1)
     {
-        if (alarm_time.tm_min == current_time.tm_min &&
-            alarm_time.tm_hour == current_time.tm_hour &&
-            alarmState != ALARM_SHUTOFF) alarmState = ALARM_ON;                 // turn the alarm on, when it is time for the alarm to go off
+        if (alarm_time.tm_min == localtime(&seconds)->tm_min &&
+            alarm_time.tm_hour == localtime(&seconds)->tm_hour &&
+            alarmState != ALARM_SHUTOFF && alarmState != ALARM_SNOOZE) alarmState = ALARM_ON;                 // turn the alarm on, when it is time for the alarm to go off
         if (alarmState == ALARM_ON && AlarmOff == 0) alarmState = ALARM_SHUTOFF;// AlarmOff being depressed results in logic 0 because it is pulled up in the design
+        if (alarmState == ALARM_ON && AlarmSnooze == 0)
+        {
+            alarmState = ALARM_SNOOZE;
+            Snooze.attach(&SnoozeOver, 60.0 * SNOOZE_TIME);                               // Start a Timeout for 5 minutes to snooze
+        }
         if (alarmState == ALARM_ON)
         {
             uLCD_mutex.lock();
@@ -76,8 +86,9 @@ void checkAlarm()                                                               
                 uLCD.filled_rectangle(0, 0, 127, 127, flashRed);                // fill the screen with black
                 uLCD_mutex.unlock();
                 flashRed = 0xFF0000;                                            // set flashRed make to 0xFF0000 (RED) so this code segment runs once at most per alarm_off
-            }
-            strftime(cTime, 32, "%I:%M %p\n", &current_time);                   // turn the current_time tm struct into a string (character array)
+            }                 
+            seconds = time(NULL);                                               // Tell RTC to update                                       
+            strftime(cTime, 32, "%I:%M %p\n", localtime(&seconds));             // turn the localtime(&seconds) time_t struct into a string (character array)
             strftime(aTime, 32, "%I:%M %p\n", &alarm_time);                     // turn the alarm_time tm struct into a string "aTime"
             uLCD_mutex.lock();
             uLCD.locate(0,0);
@@ -94,7 +105,7 @@ void checkAlarm()                                                               
             uLCD.color(WHITE);
             uLCD_mutex.unlock();
         }
-        Thread::wait(100);
+        Thread::wait(10);
     }
 }
 
@@ -118,49 +129,31 @@ void blueRX()                                                                   
             if (Bluetooth.getc() == 'B')                                        // '!' alone is not a button, must be followed by 'B', then [1,4]
             {
                 char snoozeMins = Bluetooth.getc();                             // making assumption that one does not hold the button for very long
-                if (snoozeMins <= '4' && snoozeMins >= '1')                     
-                {
-                    led2 = !led2;
-                    alarmState = ALARM_SNOOZE;
-                    Snooze.attach(&SnoozeOver, 60.0 * ((int) snoozeMins - 48)); // Start a Timeout for 1, 2, 3, or 4 minutes - '1' is 49 in ASCII, '2' -> 50, etc.
-                }
+                //if (snoozeMins <= '4' && snoozeMins >= '1')                     
+                //{
+                led2 = !led2;
+                alarmState = ALARM_SNOOZE;
+                Snooze.attach(&SnoozeOver, 60.0 * SNOOZE_TIME);                 // Start a Timeout for some number of minutes
+                //}
             }
         }
-        PC_mutex.lock();
-        PC.putc(curr_in);
-        PC_mutex.unlock();
+        //PC_mutex.lock();
+        //PC.putc(curr_in);
+        //PC_mutex.unlock();
     }
 }
 
-void PCRX()                                                                     // the interrupt for an incoming PC signal
-{
-    char curr_in;
-    while (PC.readable())
-    {
-        PC_mutex.lock();
-        curr_in = (char) PC.getc();
-        PC_mutex.unlock();
-        Bluetooth.putc(curr_in);
-    }
-}
-
-void PIRX()
-{
-    // fill in this code
-    // coerce whatever the pi sends over USB into the tm struct for current_time or the tm struct for alarm_time
-    // if you set the value for current_time, please do:
-    //      IncTime.detach();
-    // and then at the very end of setting current_time:
-    //      waitingMin = 0;
-    // Be very careful about using the PC serial, use the PC_mutex
-    // the tm structs can be assigned values like
-    //      current_time.tm_min = 48;
-    // or
-    //      current_time.tm_hour = 18;
-    //
-    // Lastly, there is a declaration for USBSerial Pi commented out near the top, and the baud rate and attaching this interrupt are commented out in the main thread
-}
-        
+//void PCRX()                                                                     // the interrupt for an incoming PC signal
+//{
+//    char curr_in;
+//    while (PC.readable())
+//    {
+//        //PC_mutex.lock();
+//        //curr_in = (char) PC.getc();
+//        //PC_mutex.unlock();
+//        Bluetooth.putc(curr_in);
+//    }
+//}
 
 void setMotors()
 {
@@ -201,22 +194,22 @@ void checkSonar()                                                               
 void dist(int distance)                                                         // This method gets called by the ultrasonic object when checkDistance reveals a change
 {   
     led3 = !led3;
-    PC_mutex.lock();
-    PC.printf("Distance %d mm \r\n", distance);
-    PC_mutex.unlock();
+    //PC_mutex.lock();
+    //PC.printf("Distance %d mm \r\n", distance);
+    //PC_mutex.unlock();
     if (distance < 120 && alarmState == ALARM_ON) alarmState = ALARM_ON_HAZARD; // if there is a hazard, detect it and change the state
     if (distance >= 120 && alarmState == ALARM_ON_HAZARD) alarmState= ALARM_ON; // if there is no longer a hazard, change the state back to what it was
 }
 
 void MinutePassed()                                                             // IncTime timeout calls this method every minute
 {
-    if (current_time.tm_min == 59)
+    /*if (current_time.tm_min == 59)
     {
         if (current_time.tm_hour == 23) current_time.tm_hour = 0;
         current_time.tm_min = 0;
     }
     else current_time.tm_min++;
-    waitingMin = 0;
+    waitingMin = 0;*/
     if (alarmState == ALARM_SHUTOFF) alarmState = ALARM_OFF;                    // ALARM_OFF is idle state, cannot get to ALARM_ON from ALARM_SHUTOFF by design
 }
 
@@ -227,6 +220,29 @@ int main()
     uLCD.text_height(2);
     uLCD.color(0xFFFFFF);
     uLCD.baudrate(3000000);
+    uLCD.printf("Set your\nalarm.");
+    uint8_t buf[128];
+    std::string buf_text;
+    
+    Pi.scanf("%s", buf);                                                        // Read current time over serial from Pi
+    //PC.printf("recv: %s\r\n", buf);                                             // Print current time (in seconds) to PC
+    buf_text = (const char*)buf;                                                // Convert buffer to string
+    int buf_int = std::atoi(buf_text.c_str());                                  // Convert string to int 
+    set_time(buf_int);                                                          // Set the RTC
+    
+    Pi.scanf("%s", buf);                                                        // Read alarm time over serial from Pi
+    //PC.printf("Alarm recv: %s\r\n", buf);                                       // Print alarm time to PC
+    buf_text = (const char*)buf;                                                // Convert buffer to string
+    std::string hours = buf_text.substr(0,2);                                   // Extract alarm hours
+    std::string minutes = buf_text.substr(2,3);                                 // Extract alarm minutes
+    int hour_int = std::atoi(hours.c_str());                                    // Convert alarm hour string to int 
+    int min_int = std::atoi(minutes.c_str());                                   // Convert alarm minute string to int
+    alarm_time.tm_hour = hour_int;                                              // Set the alarm time
+    alarm_time.tm_min = min_int;
+    uLCD.cls();
+    uLCD.text_width(2);
+    uLCD.text_height(2);
+    
     Sonar.startUpdates();                                                       // Start measuring the distance
     Thread thread1;
     thread1.start(callback(checkAlarm));                                        // thread1 manages the state of the alarm and status info
@@ -236,10 +252,8 @@ int main()
     thread3.start(callback(checkSonar));                                        // thread3 is sonar-checking thread. A sonar change triggers an interrupt
     Bluetooth.baud(9600);
     Bluetooth.attach(&blueRX, Serial::RxIrq);                                   // Blutooth is an interrupt 
-    PC.baud(9600);                                                              // PC UART and Bluetooth UART must match baudrates
-    PC.attach(&PCRX, Serial::RxIrq);
-    //PI.baud(WHATEVER_THAT_HAPPENS_TO_BE);                                     
-    //PI.attach(&PIRX, Serial::RxIrq);                                          // Raspberry Pi USBSerial Interrupt
+    //PC.baud(9600);                                                              // PC UART and Bluetooth UART must match baudrates
+    //PC.attach(&PCRX, Serial::RxIrq);                                     
     
     while(1) {
         if (waitingMin == 0)
@@ -251,3 +265,4 @@ int main()
         Thread::wait(500);
     }
 }
+
