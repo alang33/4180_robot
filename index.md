@@ -16,9 +16,10 @@ This project creates an RC robot alarm clock. The idea is that you can set an al
 - (3x) DC Battery Pack
 - (12x) AA Batteries
 - Sparkfun MiniUSB Breakout Board
+- Sparkfun USB-A Breakout Board
 - uLCD-144-G2 LCD Screen
-- USB A to MiniUSB Cable
-- MiniUSB to USB A Adapter
+- USB-A to MiniUSB Cable
+- MiniUSB to USB-A Adapter
 - MicroUSB to DC Barrel Jack
 - Adafruit Bluefruit LE UART Friend Bluetooth Module
 - Adafruit Stereo Bonnet Pack for Raspberry Pi Zero W
