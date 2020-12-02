@@ -27,9 +27,8 @@ Mutex uLCD_mutex;                                                               
 Mutex PC_mutex;                                                                 // The PC Serial port can be written by either Bluetooth or the Pi when debugging
 volatile unsigned int alarmState = ALARM_OFF;                                   // power up with alarm off
 volatile uint8_t buffy[128];
-//struct tm current_time = {.tm_min=59, .tm_hour=23};                           // The current time, to be written by the Pi at the beginning of execution
 struct tm alarm_time;                                                           // The alarm time, to be written by the Pi at the beginning of execution
-                                                                                // TODO: current_time and alarm_time are arbitrary and hard coded right now, set up method to set them
+
 unsigned int flashRed = 0xFF0000;                                               // the color to flash when the alarm is going off (RED)
 void dist (int distance);                                                       // declaring the interrupt routine for sonar
 void SnoozeOver();                                                              // The snooze Timeout's callback function
@@ -39,19 +38,18 @@ volatile unsigned int waitingMin = 0;                                           
 
 ///   Declaring all hardware object
 RawSerial Bluetooth(p13, p14);                                                  // Adafruit Bluetooth Module:   p13 - TX, p14 - RX
-//RawSerial PC(USBTX, USBRX);                                                     // debug connection to the PC:  USBTX - TX, USBRX - RX 
+//RawSerial PC(USBTX, USBRX);                                                   // debug connection to the PC:  USBTX - TX, USBRX - RX 
 USBSerial Pi;                                                                   // Pi USB connection from breakout to D+, D-
 ultrasonic Sonar(p6, p7, .1, 1, &dist);                                         // the sonar sensor (1 of them);
 uLCD_4DGL uLCD(p28, p27, p30);                                                  // LCD screen for time, status: p28 - TX, p27 - RX, p30 - reset
 Motor leftWheel(p23, p21, p22);                                                 // H-bridge for left motor:     p23 - PWMA, p21 - fwd (AI1), p22 - rev (AI2)
 Motor rightWheel(p26, p24, p25);                                                // H-bridge for right motor:    p26 - PWMB, p24 - fwd (BI1), p25 - rev (BI2)
-DigitalIn AlarmOff(p20, PullUp);                                                        // in case we want to use a push button instead of resetting mbed
-DigitalIn AlarmSnooze(p19, PullUp);
+DigitalIn AlarmOff(p20, PullUp);                                                // push-button that turns off motors on mbed, and speaker on Pi
+DigitalIn AlarmSnooze(p19, PullUp);                                             // push-button that snoozes alarm for 1 minute by default
 DigitalOut led1(LED1);                                                          // LEDs on mbed for debugging
 DigitalOut led2(LED2);
 DigitalOut led3(LED3);
 DigitalOut led4(LED4);
-///   End of hardware object declaration
 
 
 
@@ -64,12 +62,14 @@ void checkAlarm()                                                               
     {
         if (alarm_time.tm_min == localtime(&seconds)->tm_min &&
             alarm_time.tm_hour == localtime(&seconds)->tm_hour &&
-            alarmState != ALARM_SHUTOFF && alarmState != ALARM_SNOOZE) alarmState = ALARM_ON;                 // turn the alarm on, when it is time for the alarm to go off
-        if (alarmState == ALARM_ON && AlarmOff == 0) alarmState = ALARM_SHUTOFF;// AlarmOff being depressed results in logic 0 because it is pulled up in the design
+            alarmState != ALARM_SHUTOFF && alarmState != ALARM_SNOOZE && 
+            alarmState != ALARM_ON_HAZARD) alarmState = ALARM_ON;               // turn the alarm on, when it is time for the alarm to go off
+        if (alarmState == ALARM_ON && AlarmOff == 0) 
+            alarmState = ALARM_SHUTOFF;                                         // AlarmOff being depressed results in logic 0 because it is pulled up in the design
         if (alarmState == ALARM_ON && AlarmSnooze == 0)
         {
             alarmState = ALARM_SNOOZE;
-            Snooze.attach(&SnoozeOver, 60.0 * SNOOZE_TIME);                               // Start a Timeout for 5 minutes to snooze
+            Snooze.attach(&SnoozeOver, 60.0 * SNOOZE_TIME);                     // Start a Timeout for SNOOZE_TIME minutes to snooze
         }
         if (alarmState == ALARM_ON)
         {
@@ -92,7 +92,7 @@ void checkAlarm()                                                               
             strftime(aTime, 32, "%I:%M %p\n", &alarm_time);                     // turn the alarm_time tm struct into a string "aTime"
             uLCD_mutex.lock();
             uLCD.locate(0,0);
-            uLCD.printf("%d\r\n", alarmState);                                  // TODO: This can be removed in the final product, used for debugging
+            uLCD.printf("%d\r\n", alarmState);                                  // The state of the machine, mainly for debugging purposes
             uLCD.locate(0,3);
             uLCD.printf("%s\r\n", cTime);
             uLCD.locate(0,6);
@@ -137,14 +137,14 @@ void blueRX()                                                                   
                 //}
             }
         }
-        //PC_mutex.lock();
+        //PC_mutex.lock();                                                      // uncomment if using PC serial to debug
         //PC.putc(curr_in);
         //PC_mutex.unlock();
     }
 }
 
-//void PCRX()                                                                     // the interrupt for an incoming PC signal
-//{
+//void PCRX()                                                                   // the interrupt for an incoming PC signal
+//{                                                                             // uncomment if using PC serial to debug
 //    char curr_in;
 //    while (PC.readable())
 //    {
@@ -164,13 +164,16 @@ void setMotors()
         switch (alarmState)
         {
         case (ALARM_ON):
-            lMotor = ((float) rand()) / RAND_MAX;                               // random value between 0 (off) and 1 (forward);
-            rMotor = lMotor + 0.3 * (((float) rand())/RAND_MAX - 0.5);          // random value between lMotor-0.3, lMotor+0.3
-            if (rMotor < 0) rMotor = 0;                                         // dont want bot moving backwards, so guarantee positive motor speed 
+            lMotor = 0.5;
+            rMotor = 0.5;
+                                                                                // If you want a more random movement, uncomment the following code
+//            lMotor = ((float) rand()) / RAND_MAX;                               // random value between 0 (off) and 1 (forward);
+//            rMotor = lMotor + 0.3 * (((float) rand())/RAND_MAX - 0.5);          // random value between lMotor-0.3, lMotor+0.3
+//            if (rMotor < 0) rMotor = 0;                                         // dont want bot moving backwards, so guarantee positive motor speed 
             break;
         case (ALARM_ON_HAZARD):
-            lMotor = 0.1;                                                       // TODO: once we have multiple sonars, do smart stuff here - right now it just slows down
-            rMotor = 0.1;
+            lMotor = 1.0;                                                       // turn until there is no hazard
+            rMotor = 0;
             break;
         default:
             lMotor = 0.0;
@@ -194,22 +197,15 @@ void checkSonar()                                                               
 void dist(int distance)                                                         // This method gets called by the ultrasonic object when checkDistance reveals a change
 {   
     led3 = !led3;
-    //PC_mutex.lock();
+    //PC_mutex.lock();                                                          // uncomment if using PC Serial to debug
     //PC.printf("Distance %d mm \r\n", distance);
     //PC_mutex.unlock();
-    if (distance < 120 && alarmState == ALARM_ON) alarmState = ALARM_ON_HAZARD; // if there is a hazard, detect it and change the state
-    if (distance >= 120 && alarmState == ALARM_ON_HAZARD) alarmState= ALARM_ON; // if there is no longer a hazard, change the state back to what it was
+    if (distance < 600 && alarmState == ALARM_ON) alarmState = ALARM_ON_HAZARD; // if there is a hazard, detect it and change the state
+    if (distance >= 600 && alarmState == ALARM_ON_HAZARD) alarmState= ALARM_ON; // if there is no longer a hazard, change the state back to what it was
 }
 
 void MinutePassed()                                                             // IncTime timeout calls this method every minute
 {
-    /*if (current_time.tm_min == 59)
-    {
-        if (current_time.tm_hour == 23) current_time.tm_hour = 0;
-        current_time.tm_min = 0;
-    }
-    else current_time.tm_min++;
-    waitingMin = 0;*/
     if (alarmState == ALARM_SHUTOFF) alarmState = ALARM_OFF;                    // ALARM_OFF is idle state, cannot get to ALARM_ON from ALARM_SHUTOFF by design
 }
 
@@ -253,7 +249,7 @@ int main()
     Bluetooth.baud(9600);
     Bluetooth.attach(&blueRX, Serial::RxIrq);                                   // Blutooth is an interrupt 
     //PC.baud(9600);                                                              // PC UART and Bluetooth UART must match baudrates
-    //PC.attach(&PCRX, Serial::RxIrq);                                     
+    //PC.attach(&PCRX, Serial::RxIrq);                                            // uncomment if using PC serial to debug
     
     while(1) {
         if (waitingMin == 0)
