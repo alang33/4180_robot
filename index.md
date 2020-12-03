@@ -100,9 +100,9 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 
 |  Pi  | Pushbutton(1)| Pushbutton(2)| Pushbutton(3)|
 | ---- | ------------ | ------------ | ------------ |
-| p4   |      +       |              |              | 
 | p2   |              |       +      |              | 
-| p3   |              |              |       +      | 
+| p3   |              |              |       +      |
+| p4   |      +       |              |              | 
 | GND  |      -       |       -      |       -      | 
 
 ### Schematic
