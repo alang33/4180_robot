@@ -90,10 +90,12 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 
 ### Raspberry Pi Connections
 
-| MBED | Pi |
-| ---- | -- |
-| p    |    |
-
+| MBED |  Pi  | Pushbutton(1)| Pushbutton(2)| Pushbutton(3)|
+| ---- | ---- | ------------ | ------------ | ------------ |
+| p19  | p4   |      +       |              |              | 
+| p20  | p2   |              |       +      |              | 
+|      | p3   |              |              |       +      | 
+| GND  | GND  |      -       |       -      |       -      | 
 ### Schematic
 ![Robot Schematic](/Schematic.png)
 
