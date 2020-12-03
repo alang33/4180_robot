@@ -112,6 +112,7 @@ Our main area of difficulties centered around the USB Serial library used to int
 Additionally, time could be spent on reducing the weight of the robot to allow for more agile movements.
 
 ### Demonstration Video
+[![AlarmBot](/THUMBNAIL.jpg)](https://youtu.be/H7WUeXeeLBM)
 
 [editor on GitHub](https://github.com/alang33/4180_robot/edit/gh-pages/index.md)
 
