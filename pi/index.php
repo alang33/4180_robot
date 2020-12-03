@@ -1,3 +1,5 @@
+
+  
 <?php
     include('session.php');
     
@@ -15,7 +17,7 @@
         $hours = $_POST["hours"];
         $minutes = $_POST["minutes"];
         $txt = "$song-$artist\n";
-        $txt_2 = "$hours-$minutes\n";
+        $txt_2 = "$hours$minutes\n";
         if(isset($_POST["add"])){
             $file = fopen("/var/www/html/song.txt", "r");
             $file_2 = fopen("/var/www/html/alarm.txt", "r");
@@ -23,22 +25,23 @@
             $status_2 = fread($file_2,4);       
             fclose($file);
             fclose($file_2);
-            if ($status == "NULL"){
+            #if ($status == "NULL"){
               $file = fopen("/var/www/html/song.txt", "w");
               fwrite($file, $txt);
               fclose($file);
-            }
-            if ($status_2 == "NULL"){
-                          $file_2 = fopen("/var/www/html/alarm.txt", "w");
-                          fwrite($file_2, $txt_2);
-                          fclose($file_2);
-                        }
-        exec("mode /dev/ttyACM0 BAUD=9600 PARITY=N data=8 stop=1, xon=off");
-        $send=fopen("/var/www/html/pi_clock/alarm_time.py", "w+");
-             fwrite($send, "sdfsdf");
-             fclose($send);
-        
-        $success = shell_exec("python /var/www/html/pi_clock/Play_song.py > /dev/null &");
+            #}
+            #if ($status_2 == "NULL"){
+               $file_2 = fopen("/var/www/html/alarm.txt", "w");
+               fwrite($file_2, $txt_2);
+               fclose($file_2);
+            #}
+        #exec("mode /dev/ttyACM0 BAUD=9600 PARITY=N data=8 stop=1, xon=off");
+        #$send=fopen("/var/www/html/pi_clock/alarm_time.py", "w+");
+             #fwrite($send, "sdfsdf");
+             #fclose($send);
+        #$sned = shell_exec("echo " + strval($txt_2) + " > /dev/ttyACM0");
+        #$success = shell_exec("python /var/www/html/pi_clock/current_time.py");
+        $success = shell_exec("python /var/www/html/Spotify/Play_song.py > /dev/null &");
         $success = 1;
         
         
@@ -57,28 +60,22 @@
     body { 
   	margin: 0;
       color:#f0f0f0;
-      font-family: 'Strait';font-size: 22px;
+      font-family: 'Strait';font-size: 2rem;
       background-color:#191919;
     }
     a  { color:#0000FF; }
 
 	h1 {
      width:100%;
-	   margin:10px;
 	   text-align: center;
-	   float:right;
 	}
-	
-
   
   button {
     background-color: #4CAF50;
     color: white;
     padding: 14px 20px;
-    margin: 8px 0;
     border: none;
     cursor: pointer;
-    width: 100%;
   }
         
   .button1{
@@ -93,53 +90,64 @@
   }
         
  div.content {
-  margin-left: 200px;
   padding: 1px 16px;
-  height: 800px;
 } 
-
+.center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
 
   
   .left {
     padding: 16px;
-	float:left;
-	width:50%;
-  }
+    float:left;
+    width:50%;
+    }
   
   .right {
     padding: 16px;
-  }
+    }
   
   .err {
     color:red;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   .success {
     color:green;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
 .rect {
     background-color: #262626;
     color: white;
     padding: 25px ;
-    margin-left: 30%;
-    margin-top: 25%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center;
     border: 2px solid black;
     cursor: pointer;
-    height: 100px;
-    width: 35%;
+    height: 12rem;
+    width: 30rem;
 }    
 
 .rect_1 {
     background-color: #262626;
     color: white;
     padding: 25px ;
-    margin-left: 30%;
-    margin-top: 25%;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
     border: 2px solid black;
     cursor: pointer;
-    height: 25px;
-    width: 35%;
+    height: 3rem;
+    width: 30rem;
 } 
 optgroup{font-size:20px;}
  /* Change styles for span and cancel button on extra small screens */
@@ -201,30 +209,41 @@ function updateClock ( )
       
   </h1>
   <form action="" method="post">
-      <div class = "rect_1" style = "margin-top: 5%; margin-bottom: 1%;">
-          <div>
-    <select name="hours" style = "margin-top: 0%;margin-left: 5%;width:40%; height: 150%; font-size: 20px;">
+      <div class = "center">
+          <div class = "rect_1">
+    <select name="hours" style = "font-size: 1.3rem; width: 5.2rem">
     <optgroup>
-      <option value="0">0</option>
-      <option value="1">1</option>
-      <option value="2">2</option>
-      <option value="3">3</option>
-      <option value="4">4</option>
-      <option value="5">5</option>
-      <option value="6">6</option>
-      <option value="7">7</option>
-      <option value="8">8</option>
-      <option value="9">9</option>
-      <option value="10">10</option>
-      <option value="11">11</option>
-      <option value="12">12</option>
+      <option value="00">12 AM</option>
+      <option value="01">1 AM</option>
+      <option value="02">2 AM</option>
+      <option value="03">3 AM</option>
+      <option value="04">4 AM</option>
+      <option value="05">5 AM</option>
+      <option value="06">6 AM</option>
+      <option value="07">7 AM</option>
+      <option value="08">8 AM</option>
+      <option value="09">9 AM</option>
+      <option value="10">10 AM</option>
+      <option value="11">11 AM</option>
+      <option value="12">12 PM</option>
+      <option value="13">1 PM</option>
+      <option value="14">2 PM</option>
+      <option value="15">3 PM</option>
+      <option value="16">4 PM</option>
+      <option value="17">5 PM</option>
+      <option value="18">6 PM</option>
+      <option value="19">7 PM</option>
+      <option value="20">8 PM</option>
+      <option value="21">9 PM</option>
+      <option value="22">10 PM</option>
+      <option value="23">11 PM</option>
     </optgroup>
     </select>
-    <label>:</label>
-    <select name="minutes" style = "margin-top: 0%; margin-left: 5%;width:40%; height: 150%; font-size: 20px;">
+    <label style = "font-size: 1.5rem;">:</label>
+    <select name="minutes" style = "width: 5.2postrem; font-size: 1.3rem;">
     <optgroup>
-      <option value="0">0</option>
-      <option value="5">5</option>
+      <option value="00">00</option>
+      <option value="05">05</option>
       <option value="10">10</option>
       <option value="15">15</option>
       <option value="20">20</option>
@@ -240,18 +259,23 @@ function updateClock ( )
 
           </div>
     </div>
+<div class = "center">
       <div class = "rect" style = "margin-top: 1%;margin-bottom: 1%;">
           <div>
               <label style = "width:45%">Song</label>
-              <input style = "width:45%; height: 30%; margin-left: 5%;" type="text" name="song" required >
+		<p style = "font-size: 0.5rem;"></p>
+              <input style = "width: 12rem; height: 2rem;" name="song" required >
+              <p sytle = "font-size: 0.5rem;"></p>
           </div>
           <div>
-              <label>Artist</label>
-              <input style = "width:45%; height: 30%; margin-top: 5%; margin-left: 5%;" type="text" name="artist">
+              <label>Artist</label> 
+		<p style = "font-size: 0.5rem;"></p>
+              <input style = "width: 12rem; height: 2rem;" type="text" name="artist">
           </div>
     </div>
-      <button type = "submit" name = "add" style = "margin-top: 1%; margin-left: 33%;width:25%; font-size: 15px">Submit</button>
-    <div style = "margin-left:35%;"
+</div>
+      <button class = "center" type = "submit" name = "add" style = "margin: auto; width: 22rem; font-size: 1.6rem">Submit</button>
+    <div style = "font-size: 1.4rem;"
         <?php
                 if (is_null($success)) {
                   echo ">";

@@ -11,12 +11,12 @@ from refresh import Refresh
 # from exceptions import ResponseException
 from secrets import spotify_token, spotify_user_id
 # , discover_weekly_id
-
 led = LED(17)
+led_lcd = LED(27)
+led_snooze = LED(22)
 button = Button(2)
-
-
-
+button_lcd = Button(3)
+button_snooze = Button(4)
 class PlaySong:
     def __init__(self):
         self.user_id = spotify_user_id
@@ -66,11 +66,11 @@ class PlaySong:
         #print(song)
         #if(song == []): song = "cannot find song"
         #else: print(song_name + " + "+ artist)
-        f.truncate(0)
-        f.close()
-        f_2 = open("/var/www/html/song.txt", "w+")
-        f_2.write("NULL")
-        f_2.close()
+        #f.truncate(0)
+        #f.close()
+        #f_2 = open("/var/www/html/song.txt", "w+")
+        #f_2.write("NULL")
+        #f_2.close()
         return song 
     
     # read a file for 'remove song'
@@ -111,7 +111,8 @@ class PlaySong:
             }  
         )
         print("Play the song")
-        
+        #response_json = response.json() 
+        #print(response_json)
     def pause(self):
         query = "https://api.spotify.com/v1/me/player/pause"
         request_body = json.dumps({"context_uri": "{}".format(self.playlist_uri)})
@@ -121,57 +122,69 @@ class PlaySong:
             }  
         )
         print("pause")
-        #print("response from actions_song")
-        #print(response.json)   
-        #response_json = response.json() 
-        #print(response_json)
+        
     def check_time(self):
         f = open("/var/www/html/alarm.txt", "r+")
         firstline = f.read()
         #print(firstline)
-        data = firstline.split("-")
+        data =([firstline[i:i+2] for i in range(0, len(firstline), 2)]) 
+        #data = firstline.wrap(2)
         hours = data[0]
         minutes = data[1]
-        data_2 = minutes.split("\n")
-        minutes = data_2[0]
-        date_time = '26.11.2020 ' + hours + ':'+minutes +':00'
-        #print(date_time)
+        #data_2 = minutes.wrap(2)
+        #minutes = data_2[0]
+        date_time = '01.12.2020 ' + hours + ':'+ minutes +':00'
+        print(date_time)
         pattern = '%d.%m.%Y %H:%M:%S'
         epoch = int(time.mktime(time.strptime(date_time, pattern)))
-        #print (epoch)
-        f.truncate(0)
-        f.close()
-        f_2 = open("/var/www/html/alarm.txt", "w+")
-        f_2.write("NULL")
-        f_2.close()
+        print (epoch)
+        #f.truncate(0)
+        #f.close()
+        #f_2 = open("/var/www/html/alarm.txt", "w+")
+        #f_2.write("NULL")
+        #f_2.close()
         return epoch
 if __name__ == '__main__':
-    #command = 'echo ' + '9' + ':'+'34' + ' > /dev/ttyACM0'
-    #os.system(command)
-    #time.sleep(5)
+    start = -1
     cp = PlaySong()
     cp.call_refresh()
     tracks = cp.get_txt_songs()
     alarm_time = cp.check_time()
     if(alarm_time < int(round(time.time()))):
+        led.on()
+        sleep(1)
+        led.off()
         sys.exit()
     while True:
-        if alarm_time == int(round(time.time())) and start ==0:
+        if button_lcd.is_pressed and start == -1:
+            print("update alarm time")
+            led_lcd.on()
+            start = 0
+            command = 'python /var/www/html/pi_clock/current_time.py'
+            os.system(command)
+            sleep(2)
+            led_lcd.off()
+            sleep(2)
+        if alarm_time == int(round(time.time())) and start== 0:
+            print("alarm start")
             cp.play(tracks)
             time.sleep(1)
-            start =1
-            print("After sleep")
-        if button.is_pressed:
-            print("led is on")
-            led.on()
+            start = 1
+        if button_snooze.is_pressed:
+            print("snooze")
+            led_snooze.on()
             start = 2
             cp.pause()
-            sleep(5)
-            #button.when_released = led.off
+            sleep(60)
         if start == 2:
-            print("is led on?")
+            print("restart the song")
             start = 1
-            led.off()
+            led_snooze.off()
             cp.play(tracks)
-        
+        if button.is_pressed:
+            cp.pause()
+            led.on()
+            sleep(1)
+            led.off()
+            sys.exit()
         time.sleep(1)
