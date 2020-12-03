@@ -88,7 +88,7 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 | p7   | Echo  |
 | GND  | GND   |
 
-### Raspberry Pi Connections
+### MBED Button Connections
 
 | MBED | Pushbutton(1)| Pushbutton(2)| Pushbutton(3)|
 | ---- | ------------ | ------------ | ------------ |
@@ -96,12 +96,15 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 | p20  |              |       +      |              | 
 | GND  |      -       |       -      |       -      | 
 
+### Raspberry Pi Button Connections
+
 |  Pi  | Pushbutton(1)| Pushbutton(2)| Pushbutton(3)|
 | ---- | ------------ | ------------ | ------------ |
 | p4   |      +       |              |              | 
 | p2   |              |       +      |              | 
 | p3   |              |              |       +      | 
 | GND  |      -       |       -      |       -      | 
+
 ### Schematic
 ![Robot Schematic](/Schematic.png)
 
@@ -112,7 +115,7 @@ Our main area of difficulties centered around the USB Serial library used to int
 Additionally, time could be spent on reducing the weight of the robot to allow for more agile movements.
 
 ### Demonstration Video
-<iframe src="https://drive.google.com/file/d/1FtK1rr7Eu_E5E9mukUXWRYC-gY3-_CVr/preview" width="580" height="400"></iframe>
+<iframe src="https://drive.google.com/file/d/1FtK1rr7Eu_E5E9mukUXWRYC-gY3-_CVr/preview" width="580" height="327"></iframe>
 
 [editor on GitHub](https://github.com/alang33/4180_robot/edit/gh-pages/index.md)
 
