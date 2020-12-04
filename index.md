@@ -132,6 +132,7 @@ https://pimylifeup.com/raspberry-pi-spotify/
     ![alt text](token.png)
     
   - Enter User Id and Oauth Token to spotify_token and spotify_user_id at secrets.py
+
 ### MBED Code
 
 #### Required Libraries
@@ -919,4 +920,4 @@ function updateClock ( )
 
 Our main area of difficulties centered around the USB Serial library used to interface between the MBED and the Raspberry Pi.  We tried for hours on end to incorporate the included interrupts or place the character scanning code in a separate thread; however, the code would lock up every time and would not take any input.  The only way we could get the code to run properly was to put it at the begining of our Main method before the threads were started.  Some time could be put into rewriting this library to be more functional, like the primary Serial library for the MBED.  
 
-Additionally, time could be spent on reducing the weight of the robot to allow for more agile movements.
+Additionally, time could be spent on making the AlarmBot more compact. No only would this allow for more agile movements, but it could allow for fewer parts to be used. The AlarmBot currently requires two robot chassis and three battery packs, but a better power source could allow for the mbed, Pi, and motors to be powered off of the same supply and save space on the robot.
