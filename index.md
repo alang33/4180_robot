@@ -109,6 +109,23 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 ### Schematic
 ![Robot Schematic](/Schematic.png)
 
+
+### Raspberry Pi Set Up
+1. Set up for the website
+  1) Set up nginx 
+https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
+- index.php will be used as our web page.
+
+2. Set up for the Spotify on the Raspberry Pi
+  1) Setup Spotify connection  
+https://pimylifeup.com/raspberry-pi-spotify/
+  2) Setup Spotify api
+  - In order to run spotify directly on a Raspberry pi, the Spotify API is used.
+  - This needs two information: User Id, and Oauth Token
+    * User ID: Log into Spotify -> [Account Overview] : it's **Username**
+    * Oauth Token: [Get Oauth] -> click the **Get Token** button
+  - Enter User Id and Oauth Token to spotify_token and spotify_user_id at secrets.py
+
 ### MBED Code
 
 #### Required Libraries
