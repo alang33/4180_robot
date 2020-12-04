@@ -91,20 +91,20 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 
 ### MBED Button Connections
 
-| MBED | Pushbutton(1)| Pushbutton(2)| Pushbutton(3)|
-| ---- | ------------ | ------------ | ------------ |
-| p19  |      +       |              |              | 
-| p20  |              |       +      |              | 
-| GND  |      -       |       -      |       -      | 
+| MBED | Alarm_Snooze | Alarm_Off | Alarm_Set |
+| ---- | ------------ | --------- | --------- |
+| p19  |      +       |           |           | 
+| p20  |              |     +     |           | 
+| GND  |      -       |     -     |      -    | 
 
 ### Raspberry Pi Button Connections
 
-|  Pi  | Pushbutton(1)| Pushbutton(2)| Pushbutton(3)|
-| ---- | ------------ | ------------ | ------------ |
-| p2   |              |       +      |              | 
-| p3   |              |              |       +      |
-| p4   |      +       |              |              | 
-| GND  |      -       |       -      |       -      | 
+|  Pi  | Alarm_Snooze | Alarm_Off | Alarm_Set |
+| ---- | ------------ | --------- | --------- |
+| p2   |              |     +     |           | 
+| p3   |              |           |     +     |
+| p4   |      +       |           |           | 
+| GND  |      -       |     -     |     -     | 
 
 ### Schematic
 ![Robot Schematic](/Schematic.png)
