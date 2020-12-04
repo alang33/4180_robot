@@ -122,10 +122,12 @@ https://pimylifeup.com/raspberry-pi-spotify/
   2) Setup Spotify api
   - In order to run spotify directly on a Raspberry pi, the Spotify API is used.
   - This needs two information: User Id, and Oauth Token
-    * User ID: Log into Spotify -> [Account Overview] : it's **Username**
-    * Oauth Token: [Get Oauth] -> click the **Get Token** button
+    * User ID: Log into Spotify -> [Account Overview](https://www.spotify.com/us/account/overview/) : it's **Username**
+    ![alt text](UserId.png)
+    * Oauth Token: [Get Oauth] (https://developer.spotify.com/console/post-playlists/) -> click the **Get Token** button
+    ![alt text](token.png)
+    
   - Enter User Id and Oauth Token to spotify_token and spotify_user_id at secrets.py
-
 ### MBED Code
 
 #### Required Libraries
