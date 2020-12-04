@@ -111,27 +111,28 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 
 
 ### Raspberry Pi Set Up
-1. Set up for the website
-  1) Set up nginx 
-https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
+
+#### Set up for the website
+
+1) Set up [nginx](https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md)
 - index.php will be used as our web page.
-  2) Change the permission of the text files
+2) Change the permission of the text files
 - Since the song and alarm time are stored in the text file through php file, the ownership of these files should be changed.
 ```markdown
 chown -R www-data:www-data (directory of song.txt and alarm.txt)
 ```
-2. Set up for the Spotify on the Raspberry Pi
-  1) Setup Spotify connection  
-https://pimylifeup.com/raspberry-pi-spotify/
-  2) Setup Spotify api
-  - In order to run spotify directly on a Raspberry pi, the Spotify API is used.
-  - This needs two information: User Id, and Oauth Token
-    * User ID: Log into Spotify -> [Account Overview](https://www.spotify.com/us/account/overview/) : it's **Username**
-    ![alt text](UserId.png)
-    * Oauth Token: [Get Oauth](https://developer.spotify.com/console/post-playlists/) -> click the **Get Token** button
-    ![alt text](token.png)
+#### Set up for the Spotify on the Raspberry Pi
+  
+1) Setup [Spotify connection](https://pimylifeup.com/raspberry-pi-spotify/)
+2) Setup Spotify API
+- In order to run Spotify directly on a Raspberry Pi, the Spotify API is used.
+- This needs two pieces of information: User Id, and Oauth Token
+* User ID: Log into Spotify -> [Account Overview](https://www.spotify.com/us/account/overview/) : it's **Username**
+![alt text](UserId.png)
+* Oauth Token: [Get Oauth](https://developer.spotify.com/console/post-playlists/) -> click the **Get Token** button
+![alt text](token.png)
     
-  - Enter User Id and Oauth Token to spotify_token and spotify_user_id at secrets.py
+- Enter User Id and Oauth Token to spotify_token and spotify_user_id at secrets.py
 
 ### MBED Code
 
