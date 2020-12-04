@@ -115,7 +115,11 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
   1) Set up nginx 
 https://www.raspberrypi.org/documentation/remote-access/web-server/nginx.md
 - index.php will be used as our web page.
-
+  2) Change the permission of the text files
+- Since the song and alarm time are stored in the text file through php file, the ownership of these files should be changed.
+```markdown
+chown -R www-data:www-data (directory of song.txt and alarm.txt)
+```
 2. Set up for the Spotify on the Raspberry Pi
   1) Setup Spotify connection  
 https://pimylifeup.com/raspberry-pi-spotify/
@@ -124,7 +128,7 @@ https://pimylifeup.com/raspberry-pi-spotify/
   - This needs two information: User Id, and Oauth Token
     * User ID: Log into Spotify -> [Account Overview](https://www.spotify.com/us/account/overview/) : it's **Username**
     ![alt text](UserId.png)
-    * Oauth Token: [Get Oauth] (https://developer.spotify.com/console/post-playlists/) -> click the **Get Token** button
+    * Oauth Token: [Get Oauth](https://developer.spotify.com/console/post-playlists/) -> click the **Get Token** button
     ![alt text](token.png)
     
   - Enter User Id and Oauth Token to spotify_token and spotify_user_id at secrets.py
@@ -406,6 +410,506 @@ int main()
     }
 }
 
+```
+
+### Raspberry Pi Code
+
+#### Play_song.py
+```markdown
+import json
+import serial
+import os
+import requests
+import time
+import sys
+import threading
+from gpiozero import LED, Button
+from time import sleep
+from refresh import Refresh
+# from exceptions import ResponseException
+from secrets import spotify_token, spotify_user_id
+# , discover_weekly_id
+led = LED(17)
+led_lcd = LED(27)
+led_snooze = LED(22)
+button = Button(2)
+button_lcd = Button(3)
+button_snooze = Button(4)
+class PlaySong:
+    def __init__(self):
+        self.user_id = spotify_user_id
+        self.spotify_token = ""
+        self.tracks = ""
+        self.playlist_uri = ""
+        self.playlist_id = ""
+
+   
+    def get_spotify_uri(self, song_name, artist):
+        "Search For the Song"
+        query = "https://api.spotify.com/v1/search?query=track%3A{}+artist%3A{}&type=track&offset=0&limit=20".format(
+            song_name,
+            artist
+        )
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }
+        )
+        response_json = response.json()
+        #print(response_json["tracks"]["items"][0]["uri"])
+        return response_json["tracks"]["items"][0]["uri"]
+        #if()
+        #songs = response_json["tracks"]["items"]
+        #if(songs == []): uri = []
+           
+        # only use the first song
+        #else: uri = songs[0]["uri"]
+        #return uri
+    
+    def get_txt_songs(self):
+        f = open("/var/www/html/song.txt", "r+")
+        firstline = f.read()
+        print(firstline)
+        data = firstline.split("-")
+        song_name = data[0]
+        artist = data[1]
+        data_2 = artist.split("\n")
+        artist = data_2[0]
+       # print(song_name)
+        #print(artist)
+        song = self.get_spotify_uri(song_name, artist)
+        #print("tget_txt_song")
+        #print(song)
+        #if(song == []): song = "cannot find song"
+        #else: print(song_name + " + "+ artist)
+        #f.truncate(0)
+        #f.close()
+        #f_2 = open("/var/www/html/song.txt", "w+")
+        #f_2.write("NULL")
+        #f_2.close()
+        return song 
+    
+    # read a file for 'remove song'
+    
+       
+    #def add_song_to_playlist(self, firstline):
+        #song = self.get_txt_songs(firstline)
+
+        #query = "https://api.spotify.com/v1/playlists/{}/tracks?uris={}".format(
+            #self.playlist_id, song)
+        
+        
+    def call_refresh(self):
+        print("refresh")
+        refreshCaller = Refresh()
+        self.spotify_token = refreshCaller.refresh()
+        
+    def get_device(self):
+        query = "https://api.spotify.com/v1/me/player/devices"
+        response = requests.get(
+            query,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        response_json = response.json() 
+        print(response_json["devices"])
+    #spotify:playlist:70zNIDB6NQWXMOsdmofE5E
+    
+    def play(self, song):
+        query = "https://api.spotify.com/v1/me/player/play"
+        #track = "uri""
+        request_body = json.dumps({"uris": ["{}".format(song)]})
+        response = requests.put(query,data=request_body,
+            headers={
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        print("Play the song")
+        #response_json = response.json() 
+        #print(response_json)
+    def pause(self):
+        query = "https://api.spotify.com/v1/me/player/pause"
+        request_body = json.dumps({"context_uri": "{}".format(self.playlist_uri)})
+        response = requests.put(query, data=request_body,
+            headers={
+                "Authorization": "Bearer {}".format(self.spotify_token)
+            }  
+        )
+        print("pause")
+        
+    def check_time(self):
+        f = open("/var/www/html/alarm.txt", "r+")
+        firstline = f.read()
+        #print(firstline)
+        data =([firstline[i:i+2] for i in range(0, len(firstline), 2)]) 
+        #data = firstline.wrap(2)
+        hours = data[0]
+        minutes = data[1]
+        #data_2 = minutes.wrap(2)
+        #minutes = data_2[0]
+        date_time = '01.12.2020 ' + hours + ':'+ minutes +':00'
+        print(date_time)
+        pattern = '%d.%m.%Y %H:%M:%S'
+        epoch = int(time.mktime(time.strptime(date_time, pattern)))
+        print (epoch)
+        #f.truncate(0)
+        #f.close()
+        #f_2 = open("/var/www/html/alarm.txt", "w+")
+        #f_2.write("NULL")
+        #f_2.close()
+        return epoch
+if __name__ == '__main__':
+    start = -1
+    cp = PlaySong()
+    cp.call_refresh()
+    tracks = cp.get_txt_songs()
+    alarm_time = cp.check_time()
+    if(alarm_time < int(round(time.time()))):
+        led.on()
+        sleep(1)
+        led.off()
+        sys.exit()
+    while True:
+        if button_lcd.is_pressed and start == -1:
+            print("update alarm time")
+            led_lcd.on()
+            start = 0
+            command = 'python /var/www/html/pi_clock/current_time.py'
+            os.system(command)
+            sleep(2)
+            led_lcd.off()
+            sleep(2)
+        if alarm_time == int(round(time.time())) and start== 0:
+            print("alarm start")
+            cp.play(tracks)
+            time.sleep(1)
+            start = 1
+        if button_snooze.is_pressed:
+            print("snooze")
+            led_snooze.on()
+            start = 2
+            cp.pause()
+            sleep(60)
+        if start == 2:
+            print("restart the song")
+            start = 1
+            led_snooze.off()
+            cp.play(tracks)
+        if button.is_pressed:
+            cp.pause()
+            led.on()
+            sleep(1)
+            led.off()
+            sys.exit()
+        time.sleep(1)
+```
+#### secrets.py
+```markdown
+spotify_token = ""
+spotify_user_id = ""
+```
+
+#### index.php
+```markdown
+<?php
+    include('session.php');
+    
+    function console_log($output, $with_script_tags = true) {
+        $js_code = 'console.log('.json_encode($output, JSON_HEX_TAG).');';
+        if ($with_script_tags) {
+            $js_code = '<script>'.$js_code.'</script>';
+        }
+        echo $js_code;
+    }
+    
+    if($_SERVER["REQUEST_METHOD"] == "POST"){
+        $song = $_POST["song"];
+        $artist = $_POST["artist"];
+        $hours = $_POST["hours"];
+        $minutes = $_POST["minutes"];
+        $txt = "$song-$artist\n";
+        $txt_2 = "$hours$minutes\n";
+        if(isset($_POST["add"])){
+            $file = fopen("/var/www/html/song.txt", "r");
+            $file_2 = fopen("/var/www/html/alarm.txt", "r");
+            $status = fread($file,4);
+            $status_2 = fread($file_2,4);       
+            fclose($file);
+            fclose($file_2);
+            #if ($status == "NULL"){
+              $file = fopen("/var/www/html/song.txt", "w");
+              fwrite($file, $txt);
+              fclose($file);
+            #}
+            #if ($status_2 == "NULL"){
+               $file_2 = fopen("/var/www/html/alarm.txt", "w");
+               fwrite($file_2, $txt_2);
+               fclose($file_2);
+            #}
+        #exec("mode /dev/ttyACM0 BAUD=9600 PARITY=N data=8 stop=1, xon=off");
+        #$send=fopen("/var/www/html/pi_clock/alarm_time.py", "w+");
+             #fwrite($send, "sdfsdf");
+             #fclose($send);
+        #$sned = shell_exec("echo " + strval($txt_2) + " > /dev/ttyACM0");
+        #$success = shell_exec("python /var/www/html/pi_clock/current_time.py");
+        $success = shell_exec("python /var/www/html/Spotify/Play_song.py > /dev/null &");
+        $success = 1;
+        
+        
+        
+        }
+    }
+?>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Boombox</title>
+    <script src = "http://code.jquery.com/jquery-2.1.0.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Strait' rel='stylesheet'>
+    <style type="text/css">
+	
+    body { 
+  	margin: 0;
+      color:#f0f0f0;
+      font-family: 'Strait';font-size: 2rem;
+      background-color:#191919;
+    }
+    a  { color:#0000FF; }
+
+	h1 {
+     width:100%;
+	   text-align: center;
+	}
+  
+  button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    border: none;
+    cursor: pointer;
+  }
+        
+  .button1{
+    border-radius: 50%;
+    background-color: #191919;}
+  button1:hover {
+    opacity: 0.8;
+  }
+  
+  button:hover {
+    opacity: 0.8;
+  }
+        
+ div.content {
+  padding: 1px 16px;
+} 
+.center {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+  
+  .left {
+    padding: 16px;
+    float:left;
+    width:50%;
+    }
+  
+  .right {
+    padding: 16px;
+    }
+  
+  .err {
+    color:red;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .success {
+    color:green;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+.rect {
+    background-color: #262626;
+    color: white;
+    padding: 25px ;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; 
+    align-items: center;
+    border: 2px solid black;
+    cursor: pointer;
+    height: 12rem;
+    width: 30rem;
+}    
+
+.rect_1 {
+    background-color: #262626;
+    color: white;
+    padding: 25px ;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    border: 2px solid black;
+    cursor: pointer;
+    height: 3rem;
+    width: 30rem;
+} 
+optgroup{font-size:20px;}
+ /* Change styles for span and cancel button on extra small screens */
+  @media screen and (max-width: 300px) {
+    span.psw {
+       display: block;
+       float: none;
+    }
+    .cancelbtn {
+       width: 100%;
+    }
+  }
+  
+@media screen and (max-width: 700px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+  }
+  .sidebar a {float: left;}
+  div.content {margin-left: 0;}
+}
+
+@media screen and (max-width: 400px) {
+  .sidebar a {
+    text-align: center;
+    float: none;
+  }
+}
+    </style>
+    <!--[if IE]>
+    <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+<script>
+function updateClock ( )
+ {
+     var currentTime = new Date ( );
+     var currentHours = currentTime.getHours ( );
+     var currentMinutes = currentTime.getMinutes ( );
+     // Pad the hours, minutes and seconds with leading zeros, if required
+     currentMinutes = ( currentMinutes < 10 ? "0" : "" ) + currentMinutes;
+     if(currentHours > 12) currentHours = currentHours - 12;
+     currentHours = (currentHours < 10 ? "0" : "" ) + currentHours;
+     var currentTimeString = currentHours + ":" + currentMinutes;
+
+     $("#clock").html(currentTimeString);
+          }
+ $(document).ready(function() {
+    setInterval('updateClock()', 1000);
+ });
+</script>
+<div class="content">
+  <h1>
+    <form action="" method="post">
+      Set Alarm
+    </form>
+      
+  </h1>
+  <form action="" method="post">
+      <div class = "center">
+          <div class = "rect_1">
+    <select name="hours" style = "font-size: 1.3rem; width: 5.2rem">
+    <optgroup>
+      <option value="00">12 AM</option>
+      <option value="01">1 AM</option>
+      <option value="02">2 AM</option>
+      <option value="03">3 AM</option>
+      <option value="04">4 AM</option>
+      <option value="05">5 AM</option>
+      <option value="06">6 AM</option>
+      <option value="07">7 AM</option>
+      <option value="08">8 AM</option>
+      <option value="09">9 AM</option>
+      <option value="10">10 AM</option>
+      <option value="11">11 AM</option>
+      <option value="12">12 PM</option>
+      <option value="13">1 PM</option>
+      <option value="14">2 PM</option>
+      <option value="15">3 PM</option>
+      <option value="16">4 PM</option>
+      <option value="17">5 PM</option>
+      <option value="18">6 PM</option>
+      <option value="19">7 PM</option>
+      <option value="20">8 PM</option>
+      <option value="21">9 PM</option>
+      <option value="22">10 PM</option>
+      <option value="23">11 PM</option>
+    </optgroup>
+    </select>
+    <label style = "font-size: 1.5rem;">:</label>
+    <select name="minutes" style = "width: 5.2postrem; font-size: 1.3rem;">
+    <optgroup>
+      <option value="00">00</option>
+      <option value="05">05</option>
+      <option value="10">10</option>
+      <option value="15">15</option>
+      <option value="20">20</option>
+      <option value="25">25</option>
+      <option value="30">30</option>
+      <option value="35">35</option>
+      <option value="40">40</option>
+      <option value="45">45</option>
+      <option value="50">50</option>
+      <option value="55">55</option>
+    </optgroup>
+    </select>
+
+          </div>
+    </div>
+<div class = "center">
+      <div class = "rect" style = "margin-top: 1%;margin-bottom: 1%;">
+          <div>
+              <label style = "width:45%">Song</label>
+		<p style = "font-size: 0.5rem;"></p>
+              <input style = "width: 12rem; height: 2rem;" name="song" required >
+              <p sytle = "font-size: 0.5rem;"></p>
+          </div>
+          <div>
+              <label>Artist</label> 
+		<p style = "font-size: 0.5rem;"></p>
+              <input style = "width: 12rem; height: 2rem;" type="text" name="artist">
+          </div>
+    </div>
+</div>
+      <button class = "center" type = "submit" name = "add" style = "margin: auto; width: 22rem; font-size: 1.6rem">Submit</button>
+    <div style = "font-size: 1.4rem;"
+        <?php
+                if (is_null($success)) {
+                  echo ">";
+                }
+                else {
+                  if ($success) {
+                    echo "class=\"success\"> alarm is set";
+                  }
+
+                  else {
+                    echo "class=\"err\"> failed";
+                  }
+                }
+              ?>
+    </div>
+  </form>
+</div>
+  </body>
+</html>
 ```
 ### Demonstration Video
 
