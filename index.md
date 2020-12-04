@@ -113,14 +113,12 @@ The Raspberry Pi can be powered using the DC to microUSB adapter with its own ba
 
 #### Required Libraries
 
-```markdown
-## mbed.h
-## [rtos.h](https://os.mbed.com/handbook/RTOS)
-## [Motor.h](https://os.mbed.com/cookbook/Motor)
-## [uLCD_4DGL.h](https://os.mbed.com/users/4180_1/notebook/ulcd-144-g2-128-by-128-color-lcd/)
-## [ultrasonic.h](https://os.mbed.com/components/HC-SR04/)
-## [USBSerial.h](https://os.mbed.com/handbook/USBSerial)
-```
+mbed.h
+[rtos.h](https://os.mbed.com/handbook/RTOS)
+[Motor.h](https://os.mbed.com/cookbook/Motor)
+[uLCD_4DGL.h](https://os.mbed.com/users/4180_1/notebook/ulcd-144-g2-128-by-128-color-lcd/)
+[ultrasonic.h](https://os.mbed.com/components/HC-SR04/)
+[USBSerial.h](https://os.mbed.com/handbook/USBSerial)
 
 #### Main.cpp
 
