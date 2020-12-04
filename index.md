@@ -270,7 +270,7 @@ void blueRX()                                                                   
     while (Bluetooth.readable())
     {
         curr_in = (char) Bluetooth.getc();
-        if (curr_in == 'a') alarmState = ALARM_ON;                              // TODO: Remove these once time comparisons are implemented, unless we want to leave this debug method
+        if (curr_in == 'a') alarmState = ALARM_ON;                              // The Bluetooth commands 'a' and 'b' allow for easier debugging of mbed code
         else if (curr_in == 'b') alarmState = ALARM_SHUTOFF;
         else if (alarmState == ALARM_ON && curr_in == '!')                      // reacting to button hit/release
         {
